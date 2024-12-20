@@ -3,7 +3,7 @@ on:
     branches: [develop]
 jobs:
   develop:
-    uses: ./.github/workflows/reusable-deploy.yml
+    uses: ./.github/workflows/deploy.yml
     with:
       environment: development
       deploy_dir: /www/wwwroot/todo-list-server/develop

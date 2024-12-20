@@ -2,15 +2,9 @@ on:
   push:
     branches: [main]
 jobs:
-  pre-main:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Special production tasks
-        run: echo "Running production-specific tasks"
-
   main:
     needs: pre-main
-    uses: ./.github/workflows/reusable-deploy.yml
+    uses: ./.github/workflows/deploy.yml
     with:
       environment: production
       deploy_dir: /www/wwwroot/todo-list-server/release
