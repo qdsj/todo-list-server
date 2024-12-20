@@ -10,6 +10,11 @@ jobs:
         uses: actions/checkout@v4.2.2
         with:
           persist-credentials: false
+      - name: Set up variables
+        id: vars
+        run: |
+          echo "date=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       # 登录到 Docker Hub
       - name: Login to Docker Hub
@@ -21,7 +26,7 @@ jobs:
       # 构建并推送 Docker 镜像
       - name: Build and push
         env:
-          DOCKER_TAG: zenoschen/todolist:${{ github.sha }}
+          DOCKER_TAG: 'zenoschen/todolist:${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.date }}'
         uses: docker/build-push-action@v5
         with:
           push: true
