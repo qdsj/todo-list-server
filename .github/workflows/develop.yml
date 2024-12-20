@@ -11,3 +11,7 @@ jobs:
       SERVER_KEY: ${{ secrets.SERVER_KEY }}
       SERVER_USER_NAME: ${{ secrets.SERVER_USER_NAME }}
       SERVER_HOST: ${{ secrets.SERVER_HOST }}
+
+permissions:
+  contents: read
+  packages: write
