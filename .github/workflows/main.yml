@@ -9,7 +9,7 @@ jobs:
         run: echo "Running production-specific tasks"
 
   main:
-    needs: pre-deploy
+    needs: pre-main
     uses: ./.github/workflows/reusable-deploy.yml
     with:
       environment: production
