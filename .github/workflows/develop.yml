@@ -26,11 +26,11 @@ jobs:
       # 构建并推送 Docker 镜像
       - name: Build and push
         env:
-          DOCKER_TAG: 'zenoschen/todolist:${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.date }}'
+          DOCKER_TAG: ${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.date }}
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: ${{ env.DOCKER_TAG }}
+          tags: zenoschen/todolist:${{ env.DOCKER_TAG }}
 
       # 通过 SSH 在服务器上部署
       - name: Deploy to Server
@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.SERVER_USER_NAME }}
           key: ${{ secrets.SERVER_KEY }}
           script: |
-            docker pull ${{ env.DOCKER_TAG }}
+            docker pull zenoschen/todolist:${{ env.DOCKER_TAG }}
             docker stop todolist || true
             docker rm todolist || true
             docker run -d --name todolist \
@@ -50,4 +50,4 @@ jobs:
               -e DB_PASSWORD=${{ secrets.SERVER_SQL_TODOLIST_KEY }} \
               -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
               -e DB_DATABASE=todolist \
-              ${{ env.DOCKER_TAG }}
+              zenoschen/todolist:${{ env.DOCKER_TAG }}
