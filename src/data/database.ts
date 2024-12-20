@@ -14,8 +14,8 @@ export const createDataSource = (configService: ConfigService) => {
     database: configService.get('DB_DATABASE'),
     entities: [User, UserAuth, Task],
     synchronize: true,
-    poolSize: 10,
-    logging: true,
+    poolSize: 5,
+    logging: false,
     connectorPackage: 'mysql2',
     extra: {
       authPlugins: 'sha256_password',

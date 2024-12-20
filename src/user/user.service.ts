@@ -2,8 +2,8 @@ import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import User from './entities/user';
 import { TodoListSourceType } from 'src/data/database';
 import { RegisterByEmailDto, RegisterByPhoneDto } from './dto/register.dto';
-import * as bcrypt from 'bcrypt';
 import UserAuth from './entities/userAuth';
+import { hashPassword } from 'src/util/secrets';
 
 @Injectable()
 export class UserService {
@@ -46,7 +46,7 @@ export class UserService {
     if (!password) {
       throw new HttpException('password is required', HttpStatus.BAD_REQUEST);
     }
-    const _password = await bcrypt.hash(password, 10);
+    const _password = await hashPassword(password);
     try {
       await this.todoListSource
         .getRepository(UserAuth)
