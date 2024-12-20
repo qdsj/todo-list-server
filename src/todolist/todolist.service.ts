@@ -1,26 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTodolistDto } from './dto/create-todolist.dto';
-import { UpdateTodolistDto } from './dto/update-todolist.dto';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { TodoListSourceType } from 'src/data/database';
+import User from '../user/entities/user';
+import Task from './entities/task';
 
 @Injectable()
 export class TodolistService {
-  create(createTodolistDto: CreateTodolistDto) {
-    return 'This action adds a new todolist';
+  constructor(
+    @Inject('TodoListSource')
+    private todoListSource: TodoListSourceType,
+  ) {}
+
+  addTask(task: Task, user_id: number) {
+    const { title, description = '' } = task;
+    const newTask = { title, description, user_id };
+    return this.todoListSource.getRepository(Task).insert(newTask);
   }
 
-  findAll() {
-    return `This action returns all todolist`;
+  getAllTask(user_id: number) {
+    return this.todoListSource.getRepository(Task).findBy({ user_id });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} todolist`;
+  async getAllTaskByPhoneOrEmail(phone: string = '', email: string = '') {
+    const user = await this.todoListSource.getRepository(User).findOne({
+      where: [{ phone }, { email }],
+    });
+
+    return this.getAllTask(user.id);
   }
 
-  update(id: number, updateTodolistDto: UpdateTodolistDto) {
-    return `This action updates a #${id} todolist`;
+  getTask(id: number, user_id: number) {
+    return this.todoListSource.getRepository(Task).findOne({
+      where: { id, user_id },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} todolist`;
+  async updateTask(id: number, task: Task) {
+    const _task = await this.getTask(id, task.user_id);
+    if (!_task) {
+      throw new HttpException('task not found', HttpStatus.NOT_FOUND);
+    }
+    return this.todoListSource.getRepository(Task).update(id, task);
+  }
+
+  async deleteTask(id: number, user_id: number) {
+    const _task = await this.getTask(id, user_id);
+    if (!_task) {
+      throw new HttpException('task not found', HttpStatus.NOT_FOUND);
+    }
+    return this.todoListSource.getRepository(Task).delete(id);
   }
 }
