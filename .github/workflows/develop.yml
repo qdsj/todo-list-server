@@ -3,17 +3,11 @@ on:
     branches: [develop]
 jobs:
   develop:
-    - name: Test
-      run: |
-        echo "${{ secrets.DOCKER_NAME }}"
-        echo "${{ secrets.DOCKER_TOKEN }}"
-
-    - name: Deploy
-      uses: ./.github/workflows/deploy.yml
-      with:
-        environment: development
-        deploy_dir: /www/wwwroot/todo-list-server/develop
-      secrets:
-        SERVER_KEY: ${{ secrets.SERVER_KEY }}
-        SERVER_USER_NAME: ${{ secrets.SERVER_USER_NAME }}
-        SERVER_HOST: ${{ secrets.SERVER_HOST }}
+    uses: ./.github/workflows/deploy.yml
+    with:
+      environment: development
+      deploy_dir: /www/wwwroot/todo-list-server/develop
+    secrets:
+      SERVER_KEY: ${{ secrets.SERVER_KEY }}
+      SERVER_USER_NAME: ${{ secrets.SERVER_USER_NAME }}
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
