@@ -40,7 +40,7 @@ jobs:
           username: ${{ secrets.SERVER_USER_NAME }}
           key: ${{ secrets.SERVER_KEY }}
           script: |
-            docker pull zenoschen/todolist:${{ env.DOCKER_TAG }}
+            docker pull zenoschen/todolist:${DOCKER_TAG}
             docker stop todolist || true
             docker rm todolist || true
             docker run -d --name todolist \
@@ -50,4 +50,4 @@ jobs:
               -e DB_PASSWORD=${{ secrets.SERVER_SQL_TODOLIST_KEY }} \
               -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
               -e DB_DATABASE=todolist \
-              zenoschen/todolist:${{ env.DOCKER_TAG }}
+              zenoschen/todolist:${env.DOCKER_TAG}
