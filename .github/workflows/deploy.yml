@@ -20,6 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
+      - name: Test Docker Secrets
+        run: |
+          if [ -z "${{ secrets.DOCKER_NAME }}" ]; then
+            echo "DOCKER_NAME is empty"
+          else
+            echo "DOCKER_NAME is set"
+          fi
+
+          if [ -z "${{ secrets.DOCKER_TOKEN }}" ]; then
+            echo "DOCKER_TOKEN is empty"
+          else
+            echo "DOCKER_TOKEN is set"
+          fi
+
       - name: Test
         run: |
           echo "${{ secrets.DOCKER_NAME }}"
@@ -61,3 +75,7 @@ jobs:
               -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
               -e DB_DATABASE=todolist \
               zenoschen/todolist:latest
+
+permissions:
+  contents: read
+  packages: write
