@@ -6,25 +6,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     steps:
-      - name: Test Docker Secrets
-        run: |
-          if [ -z "${{ secrets.DOCKER_NAME }}" ]; then
-            echo "DOCKER_NAME is empty"
-          else
-            echo "DOCKER_NAME is set"
-          fi
-
-          if [ -z "${{ secrets.DOCKER_TOKEN }}" ]; then
-            echo "DOCKER_TOKEN is empty"
-          else
-            echo "DOCKER_TOKEN is set"
-          fi
-
-      - name: Test
-        run: |
-          echo "${{ secrets.DOCKER_NAME }}"
-          echo "${{ secrets.DOCKER_TOKEN }}"
-
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
@@ -48,7 +29,7 @@ jobs:
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          key: ${{ secrets.SERVER_KEY }}
           script: |
             docker pull zenoschen/todolist:latest
             docker stop todolist || true
