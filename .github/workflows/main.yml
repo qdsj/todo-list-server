@@ -1,19 +1,12 @@
 on:
   push:
-    branches: [main]
+    branches: []
 jobs:
-  pre-deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Special production tasks
-        run: echo "Running production-specific tasks"
-
-  deploy:
-    needs: pre-deploy
-    uses: ./.github/workflows/reusable-deploy.yml
+  main:
+    uses: ./.github/workflows/deploy.yml
     with:
       environment: production
-      deploy_dir: /www/wwwroot/chat-server/release
+      deploy_dir: /www/wwwroot/todo-list-server/release
     secrets:
       SERVER_KEY: ${{ secrets.SERVER_KEY }}
       SERVER_USER_NAME: ${{ secrets.SERVER_USER_NAME }}

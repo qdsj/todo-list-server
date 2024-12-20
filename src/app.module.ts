@@ -5,7 +5,6 @@ import { AppService } from './app.service';
 import { createDataSource } from './data/database';
 import { TodolistModule } from './todolist/todolist.module';
 import { UserModule } from './user/user.module';
-
 @Global()
 @Module({
   imports: [

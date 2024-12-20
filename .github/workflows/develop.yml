@@ -1,13 +1,46 @@
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
 jobs:
-  deploy:
-    uses: ./.github/workflows/reusable-deploy.yml
-    with:
-      environment: development
-      deploy_dir: /www/wwwroot/chat-server/develop
-    secrets:
-      SERVER_KEY: ${{ secrets.SERVER_KEY }}
-      SERVER_USER_NAME: ${{ secrets.SERVER_USER_NAME }}
-      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+  develop:
+    runs-on: ubuntu-latest
+    environment: development
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+
+      # 登录到 Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # 构建并推送 Docker 镜像
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: zenoschen/todolist:latest
+
+      # 通过 SSH 在服务器上部署
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER_NAME }}
+          key: ${{ secrets.SERVER_KEY }}
+          script: |
+            docker pull zenoschen/todolist:latest
+            docker stop todolist || true
+            docker rm todolist || true
+            docker run -d --name todolist \
+              -p 3000:3000 \
+              -e DB_HOST=${{ secrets.SERVER_HOST }} \
+              -e DB_USERNAME=${{ secrets.SERVER_SQL_TODOLIST_NAME }} \
+              -e DB_PASSWORD=${{ secrets.SERVER_SQL_TODOLIST_KEY }} \
+              -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
+              -e DB_DATABASE=todolist \
+              zenoschen/todolist:latest

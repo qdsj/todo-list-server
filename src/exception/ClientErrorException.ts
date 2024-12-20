@@ -1,9 +1,6 @@
-export default class ClientErrorException {
-  message: string;
-  type: string;
-
+export default class ClientErrorException extends Error {
   constructor(message: string) {
-    this.message = message;
-    this.type = 'client_error';
+    super(message);
+    this.name = 'ClientErrorException';
   }
 }

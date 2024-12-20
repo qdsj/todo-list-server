@@ -1,17 +1,77 @@
 on:
-  workflow_run:
-    workflows: [develop]
-    types: [completed]
-    branches: [develop]
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      deploy_dir:
+        required: true
+        type: string
+    secrets:
+      SERVER_KEY:
+        required: true
+      SERVER_USER_NAME:
+        required: true
+      SERVER_HOST:
+        required: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: ${{ inputs.environment }}
     steps:
-      # 下载构建产物
-      - uses: actions/download-artifact@v4
+      - name: Test Docker Secrets
+        run: |
+          if [ -z "${{ secrets.DOCKER_NAME }}" ]; then
+            echo "DOCKER_NAME is empty"
+          else
+            echo "DOCKER_NAME is set"
+          fi
+
+          if [ -z "${{ secrets.DOCKER_TOKEN }}" ]; then
+            echo "DOCKER_TOKEN is empty"
+          else
+            echo "DOCKER_TOKEN is set"
+          fi
+
+      - name: Test
+        run: |
+          echo "${{ secrets.DOCKER_NAME }}"
+          echo "${{ secrets.DOCKER_TOKEN }}"
+
+      - name: Checkout Code
+        uses: actions/checkout@v4.2.2
+
+      # 登录到 Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          name: dist
-          path: dist/
-      # 部署步骤...
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      # 构建并推送 Docker 镜像
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: zenoschen/todolist:latest
+
+      # 通过 SSH 在服务器上部署
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull zenoschen/todolist:latest
+            docker stop todolist || true
+            docker rm todolist || true
+            docker run -d --name todolist \
+              -p 3000:3000 \
+              -e DB_HOST=${{ secrets.SERVER_HOST }} \
+              -e DB_USERNAME=${{ secrets.SERVER_SQL_TODOLIST_NAME }} \
+              -e DB_PASSWORD=${{ secrets.SERVER_SQL_TODOLIST_KEY }} \
+              -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
+              -e DB_DATABASE=todolist \
+              zenoschen/todolist:latest
