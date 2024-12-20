@@ -5,7 +5,6 @@ import { AppService } from './app.service';
 import { createDataSource } from './data/database';
 import { TodolistModule } from './todolist/todolist.module';
 import { UserModule } from './user/user.module';
-import * as packageJson from '../package.json';
 @Global()
 @Module({
   imports: [
@@ -25,12 +24,6 @@ import * as packageJson from '../package.json';
       useFactory: async (configService: ConfigService) => {
         const dataSource = createDataSource(configService);
         return await dataSource.initialize();
-      },
-    },
-    {
-      provide: 'AppVersion',
-      useFactory: () => {
-        return packageJson.version;
       },
     },
   ],

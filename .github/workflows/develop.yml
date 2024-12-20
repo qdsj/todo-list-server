@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [develop]
+    branches: [develop, main]
 jobs:
   develop:
     runs-on: ubuntu-latest
@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
 
       # 登录到 Docker Hub
       - name: Login to Docker Hub
@@ -31,9 +33,6 @@ jobs:
           username: ${{ secrets.SERVER_USER_NAME }}
           key: ${{ secrets.SERVER_KEY }}
           script: |
-
-            sh /www/wwwroot/todo-list-server/gitcheck-port.sh
-
             docker pull zenoschen/todolist:latest
             docker stop todolist || true
             docker rm todolist || true
