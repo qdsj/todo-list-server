@@ -23,20 +23,36 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.0
+      # 登录到 Docker Hub
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          ssh-private-key: ${{ secrets.SERVER_KEY }}
+          username: ${{ secrets.DOCKER_NAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Deploy
-        env:
-          DEPLOY_USER: ${{ secrets.SERVER_USER_NAME }}
-          DEPLOY_HOST: ${{ secrets.SERVER_HOST }}
-          DEPLOY_DIR: ${{ inputs.deploy_dir }}
-        run: |
-          ssh-keyscan -H $DEPLOY_HOST >> ~/.ssh/known_hosts
-          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-          CODE_DIR="${DEPLOY_DIR}/${TIMESTAMP}"
-          ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p ${CODE_DIR}"
-          scp -r dist/* $DEPLOY_USER@$DEPLOY_HOST:${CODE_DIR}/
-          ssh $DEPLOY_USER@$DEPLOY_HOST "ln -sfn ${CODE_DIR} ${DEPLOY_DIR}/current"
+      # 构建并推送 Docker 镜像
+      - name: Build and push
+        uses: docker/build-push-action@v4
+        with:
+          push: true
+          tags: zenoschen/todolist:latest
+
+      # 通过 SSH 在服务器上部署
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          script: |
+            docker pull zenoschen/todolist:latest
+            docker stop todolist || true
+            docker rm todolist || true
+            docker run -d --name todolist \
+              -p 3000:3000 \
+              -e DB_HOST=${{ secrets.SERVER_HOST }} \
+              -e DB_USERNAME=${{ secrets.SERVER_SQL_TODOLIST_NAME }} \
+              -e DB_PASSWORD=${{ secrets.SERVER_SQL_TODOLIST_KEY }} \
+              -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
+              -e DB_DATABASE=todolist \
+              zenoschen/todolist:latest
