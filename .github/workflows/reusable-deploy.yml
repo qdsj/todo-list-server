@@ -45,3 +45,9 @@ jobs:
           ssh $DEPLOY_USER@$DEPLOY_HOST "mkdir -p ${CODE_DIR}"
           scp -r dist/* $DEPLOY_USER@$DEPLOY_HOST:${CODE_DIR}/
           ssh $DEPLOY_USER@$DEPLOY_HOST "ln -sfn ${CODE_DIR} ${DEPLOY_DIR}/current"
+
+      -name: Restart Docker
+        run: |
+          SHELL_DIR=${DEPLOY_DIR/develop/}
+          SHELL_DIR=${DEPLOY_DIR/release/}
+          ssh $DEPLOY_USER@$DEPLOY_HOST "sh ${SHELL_DIR}/start.sh"

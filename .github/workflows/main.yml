@@ -13,7 +13,7 @@ jobs:
     uses: ./.github/workflows/reusable-deploy.yml
     with:
       environment: production
-      deploy_dir: /www/wwwroot/chat-server/release
+      deploy_dir: /www/wwwroot/todo-list-server/release
     secrets:
       SERVER_KEY: ${{ secrets.SERVER_KEY }}
       SERVER_USER_NAME: ${{ secrets.SERVER_USER_NAME }}
