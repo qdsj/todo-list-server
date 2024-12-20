@@ -20,6 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
+      - name: Test
+        run: |
+          echo "${{ secrets.DOCKER_NAME }}"
+          echo "${{ secrets.DOCKER_TOKEN }}"
+
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
 
