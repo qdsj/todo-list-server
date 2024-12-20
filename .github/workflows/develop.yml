@@ -2,7 +2,7 @@ on:
   push:
     branches: [develop]
 jobs:
-  deploy:
+  develop:
     uses: ./.github/workflows/reusable-deploy.yml
     with:
       environment: development
