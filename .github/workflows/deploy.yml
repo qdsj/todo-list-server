@@ -75,7 +75,3 @@ jobs:
               -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
               -e DB_DATABASE=todolist \
               zenoschen/todolist:latest
-
-permissions:
-  contents: read
-  packages: write
