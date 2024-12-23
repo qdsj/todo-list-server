@@ -5,31 +5,33 @@ import {
   Get,
   HttpException,
   HttpStatus,
+  Param,
   Post,
   Put,
   Query,
 } from '@nestjs/common';
-import Task from './entities/task';
+import { CreateTaskDto } from './dto/create-todolist.dto';
 import { TodolistService } from './todolist.service';
+import { UpdateTaskDto, UpdateTaskStatusDto } from './dto/update-task.dto';
 
-@Controller('todolist')
+@Controller('tasks')
 export class TodolistController {
   constructor(private readonly todolistService: TodolistService) {}
 
-  @Get('allTask')
-  getTaskById(
-    @Query('user_id') user_id: number,
+  @Get()
+  getTasks(
+    @Query('user_id') userId: number,
     @Query('isCompleted') isCompleted: string,
     @Query('isDeleted') isDeleted: string,
   ) {
     const _isCompleted = isCompleted === 'true';
     const _isDeleted = isDeleted === 'true';
-    return this.todolistService.getAllTask(user_id, _isCompleted, _isDeleted);
+    return this.todolistService.getAllTask(userId, _isCompleted, _isDeleted);
   }
 
-  @Post('add')
-  async addTask(@Body() task: Task) {
-    const result = await this.todolistService.addTask(task, task.user_id);
+  @Post()
+  async createTask(@Body() task: CreateTaskDto) {
+    const result = await this.todolistService.addTask(task);
     if (result && result.identifiers.length > 0) {
       return result.identifiers[0];
     }
@@ -39,32 +41,65 @@ export class TodolistController {
     );
   }
 
-  @Put('update')
-  async updateTask(@Body() task: Task) {
-    const res = await this.todolistService.updateTask(task.id, task);
+  @Put(':id')
+  async updateTask(@Param('id') id: number, @Body() task: UpdateTaskDto) {
+    const res = await this.todolistService.updateTask(id, task);
     if (res && res.affected > 0) {
       return {
         affected: res.affected,
       };
     }
-    throw new HttpException('update task failed', HttpStatus.BAD_REQUEST);
+    throw new HttpException(
+      'update task failed',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
-  @Put('completed')
-  async completedTask(
-    @Query('id') id: number,
-    @Query('user_id') user_id: number,
+  @Put(':id/status')
+  async updateTaskStatus(
+    @Param('id') id: number,
+    @Body() status: UpdateTaskStatusDto,
   ) {
-    const res = await this.todolistService.completedTask(id, user_id);
+    const res = await this.todolistService.updateTaskStatus(id, status);
     if (res && res.affected > 0) {
       return {
         affected: res.affected,
       };
     }
+    throw new HttpException(
+      'update task status failed',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 
-  @Delete('delete')
-  deleteTask(@Body() task: Task) {
-    return this.todolistService.deleteTask(task.id, task.user_id);
+  @Delete(':id')
+  async softDeleteTask(
+    @Param('id') id: number,
+    @Query('user_id') userId: number,
+  ) {
+    const res = await this.todolistService.softDeleteTask(id, userId);
+    if (res && res.affected > 0) {
+      return {
+        affected: res.affected,
+      };
+    }
+    throw new HttpException(
+      'soft delete task failed',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
+  }
+
+  @Put(':id/restore')
+  async restoreTask(@Param('id') id: number, @Query('user_id') userId: number) {
+    const res = await this.todolistService.restoreTask(id, userId);
+    if (res && res.affected > 0) {
+      return {
+        affected: res.affected,
+      };
+    }
+    throw new HttpException(
+      'restore task failed',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    );
   }
 }
