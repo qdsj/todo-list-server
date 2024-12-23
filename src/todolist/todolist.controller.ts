@@ -55,7 +55,7 @@ export class TodolistController {
     );
   }
 
-  @Put(':id/status')
+  @Put('status/:id')
   async updateTaskStatus(
     @Param('id') id: number,
     @Body() status: UpdateTaskStatusDto,
