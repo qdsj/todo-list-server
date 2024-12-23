@@ -10,7 +10,7 @@ export class UpdateTaskStatusDto {
 
 export class UpdateTaskDto {
   @IsString({ message: 'title must be a string' })
-  @IsOptional()
+  // @IsOptional()
   title: string;
 
   @IsString({ message: 'description must be a string' })
