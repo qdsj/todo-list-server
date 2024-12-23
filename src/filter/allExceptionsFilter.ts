@@ -22,6 +22,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const message =
       exception instanceof HttpException ? exception.message : '服务器内部错误';
 
+    console.log('AllExceptionsFilter: ', exception);
+
     response.status(status).json({
       statusCode: status,
       message: message,

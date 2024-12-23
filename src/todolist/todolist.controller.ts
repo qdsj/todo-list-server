@@ -6,6 +6,7 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import Task from './entities/task';
@@ -15,21 +16,15 @@ import { TodolistService } from './todolist.service';
 export class TodolistController {
   constructor(private readonly todolistService: TodolistService) {}
 
-  // @Get()
-  // getTask(
-  //   @Optional() @Query('phone') phone: string,
-  //   @Optional() @Query('email') email: string,
-  // ) {
-  //   return this.todolistService.getAllTaskByPhoneOrEmail(
-  //     phone || '',
-  //     email || '',
-  //   );
-  // }
-
   @Get('allTask')
-  getTaskById(@Query('user_id') user_id: number) {
-    const res = this.todolistService.getAllTask(user_id);
-    return res;
+  getTaskById(
+    @Query('user_id') user_id: number,
+    @Query('isCompleted') isCompleted: string,
+    @Query('isDeleted') isDeleted: string,
+  ) {
+    const _isCompleted = isCompleted === 'true';
+    const _isDeleted = isDeleted === 'true';
+    return this.todolistService.getAllTask(user_id, _isCompleted, _isDeleted);
   }
 
   @Post('add')
@@ -44,9 +39,28 @@ export class TodolistController {
     );
   }
 
-  @Post('update')
-  updateTask(@Body() task: Task) {
-    return this.todolistService.updateTask(task.id, task);
+  @Put('update')
+  async updateTask(@Body() task: Task) {
+    const res = await this.todolistService.updateTask(task.id, task);
+    if (res && res.affected > 0) {
+      return {
+        affected: res.affected,
+      };
+    }
+    throw new HttpException('update task failed', HttpStatus.BAD_REQUEST);
+  }
+
+  @Put('completed')
+  async completedTask(
+    @Query('id') id: number,
+    @Query('user_id') user_id: number,
+  ) {
+    const res = await this.todolistService.completedTask(id, user_id);
+    if (res && res.affected > 0) {
+      return {
+        affected: res.affected,
+      };
+    }
   }
 
   @Delete('delete')
