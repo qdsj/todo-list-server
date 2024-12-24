@@ -5,6 +5,7 @@ export class UpdateTaskStatusDto {
   user_id: number;
 
   @IsBoolean()
+  @IsOptional()
   isCompleted: boolean;
 }
 

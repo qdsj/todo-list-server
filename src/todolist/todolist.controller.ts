@@ -24,9 +24,7 @@ export class TodolistController {
     @Query('isCompleted') isCompleted: string,
     @Query('isDeleted') isDeleted: string,
   ) {
-    const _isCompleted = isCompleted === 'true';
-    const _isDeleted = isDeleted === 'true';
-    return this.todolistService.getAllTask(userId, _isCompleted, _isDeleted);
+    return this.todolistService.getAllTask(userId, isCompleted, isDeleted);
   }
 
   @Post()
@@ -75,7 +73,7 @@ export class TodolistController {
   @Delete(':id')
   async softDeleteTask(
     @Param('id') id: number,
-    @Query('user_id') userId: number,
+    @Body('user_id') userId: number,
   ) {
     const res = await this.todolistService.softDeleteTask(id, userId);
     if (res && res.affected > 0) {
@@ -89,8 +87,8 @@ export class TodolistController {
     );
   }
 
-  @Put(':id/restore')
-  async restoreTask(@Param('id') id: number, @Query('user_id') userId: number) {
+  @Put('restore/:id')
+  async restoreTask(@Param('id') id: number, @Body('user_id') userId: number) {
     const res = await this.todolistService.restoreTask(id, userId);
     if (res && res.affected > 0) {
       return {

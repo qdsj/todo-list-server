@@ -1,17 +1,16 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { LoginByEmailDto, LoginByPhoneDto } from './dto/login.dto';
 import { RegisterByEmailDto, RegisterByPhoneDto } from './dto/register.dto';
-import User from './entities/user';
 import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post('add')
-  async addUser(@Body() user: User) {
-    return await this.userService.addUser(user);
-  }
+  // @Post('add')
+  // async addUser(@Body() user: User) {
+  //   return await this.userService.addUser(user);
+  // }
 
   @Get('check')
   getUser(@Query('phone') phone: string, @Query('email') email: string) {

@@ -3,7 +3,8 @@ import User from './entities/user';
 import { TodoListSourceType } from 'src/data/database';
 import { RegisterByEmailDto, RegisterByPhoneDto } from './dto/register.dto';
 import UserAuth from './entities/userAuth';
-import { hashPassword } from 'src/util/secrets';
+import { hashPassword, verifyPassword } from 'src/util/secrets';
+import { LoginByEmailDto, LoginByPhoneDto } from './dto/login.dto';
 
 @Injectable()
 export class UserService {
@@ -79,5 +80,29 @@ export class UserService {
 
   async getAllUsers() {
     return this.todoListSource.getRepository(User).find();
+  }
+
+  async login(login: LoginByPhoneDto | LoginByEmailDto) {
+    const user = await this.getUserByPhoneOrEmail(
+      (login as LoginByPhoneDto).phone,
+      (login as LoginByEmailDto).email,
+    );
+    if (!user) {
+      throw new HttpException('user not found', HttpStatus.BAD_REQUEST);
+    }
+    const userAuth = await this.todoListSource.getRepository(UserAuth).findOne({
+      where: { user_id: user.id },
+    });
+    if (!userAuth) {
+      throw new HttpException('user auth not found', HttpStatus.BAD_REQUEST);
+    }
+    const isPasswordValid = await verifyPassword(
+      login.password,
+      userAuth.password,
+    );
+    if (!isPasswordValid) {
+      throw new HttpException('password is incorrect', HttpStatus.UNAUTHORIZED);
+    }
+    return user;
   }
 }

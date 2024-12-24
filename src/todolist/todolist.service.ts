@@ -27,16 +27,16 @@ export class TodolistService {
     return this.todoListSource.getRepository(Task).insert(newTask);
   }
 
-  getAllTask(user_id: number, isCompleted?: boolean, isDeleted?: boolean) {
+  getAllTask(user_id: number, isCompleted?: string, isDeleted?: string) {
     if (!user_id) {
       throw new HttpException('user_id is required', HttpStatus.BAD_REQUEST);
     }
     const where: any = { user_id };
     if (isCompleted !== undefined) {
-      where.isCompleted = isCompleted;
+      where.isCompleted = isCompleted === 'true';
     }
     if (isDeleted !== undefined) {
-      where.isDeleted = isDeleted;
+      where.isDeleted = isDeleted === 'true';
     } else {
       where.isDeleted = false;
     }
@@ -87,28 +87,6 @@ export class TodolistService {
       completed_time: _isCompleted ? new Date() : null,
     });
   }
-
-  // async completedTask(id: number, user_id: number) {
-  //   const _task = await this.getTask(id, user_id);
-  //   if (!_task) {
-  //     throw new HttpException('task not found', HttpStatus.BAD_REQUEST);
-  //   }
-  //   return this.todoListSource.getRepository(Task).update(id, {
-  //     isCompleted: true,
-  //     completed_time: new Date(),
-  //   });
-  // }
-
-  // async disCompleteTask(id: number, user_id: number) {
-  //   const _task = await this.getTask(id, user_id);
-  //   if (!_task) {
-  //     throw new HttpException('task not found', HttpStatus.BAD_REQUEST);
-  //   }
-  //   return this.todoListSource.getRepository(Task).update(id, {
-  //     isCompleted: false,
-  //     completed_time: null,
-  //   });
-  // }
 
   async softDeleteTask(id: number, user_id: number) {
     const _task = await this.getTask(id, user_id);
