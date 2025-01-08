@@ -1,46 +1,20 @@
 on:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        type: string
-      deploy_dir:
-        required: true
-        type: string
-    secrets:
-      SERVER_KEY:
-        required: true
-      SERVER_USER_NAME:
-        required: true
-      SERVER_HOST:
-        required: true
-
+  push:
+    branches: [develop, main]
 jobs:
-  deploy:
+  develop:
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: development
     steps:
-      - name: Test Docker Secrets
-        run: |
-          if [ -z "${{ secrets.DOCKER_NAME }}" ]; then
-            echo "DOCKER_NAME is empty"
-          else
-            echo "DOCKER_NAME is set"
-          fi
-
-          if [ -z "${{ secrets.DOCKER_TOKEN }}" ]; then
-            echo "DOCKER_TOKEN is empty"
-          else
-            echo "DOCKER_TOKEN is set"
-          fi
-
-      - name: Test
-        run: |
-          echo "${{ secrets.DOCKER_NAME }}"
-          echo "${{ secrets.DOCKER_TOKEN }}"
-
       - name: Checkout Code
         uses: actions/checkout@v4.2.2
+        with:
+          persist-credentials: false
+      - name: Set up variables
+        id: vars
+        run: |
+          echo "date=$(date +'%Y%m%d_%H%M%S')" >> $GITHUB_OUTPUT
+          echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
 
       # 登录到 Docker Hub
       - name: Login to Docker Hub
@@ -51,20 +25,22 @@ jobs:
 
       # 构建并推送 Docker 镜像
       - name: Build and push
+        env:
+          DOCKER_TAG: ${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.date }}
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: zenoschen/todolist:latest
+          tags: zenoschen/todolist:${{ env.DOCKER_TAG }}
 
       # 通过 SSH 在服务器上部署
       - name: Deploy to Server
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
+          username: ${{ secrets.SERVER_USER_NAME }}
+          key: ${{ secrets.SERVER_KEY }}
           script: |
-            docker pull zenoschen/todolist:latest
+            docker pull zenoschen/todolist:${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.date }}
             docker stop todolist || true
             docker rm todolist || true
             docker run -d --name todolist \
@@ -74,4 +50,4 @@ jobs:
               -e DB_PASSWORD=${{ secrets.SERVER_SQL_TODOLIST_KEY }} \
               -e DB_PORT=${{ secrets.SERVER_SQL_PORT }} \
               -e DB_DATABASE=todolist \
-              zenoschen/todolist:latest
+              zenoschen/todolist:${{ steps.vars.outputs.version }}-${{ steps.vars.outputs.date }}
