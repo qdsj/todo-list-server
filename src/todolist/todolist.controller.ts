@@ -9,16 +9,20 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateTaskDto } from './dto/create-todolist.dto';
 import { TodolistService } from './todolist.service';
 import { UpdateTaskDto, UpdateTaskStatusDto } from './dto/update-task.dto';
+import { CookieAuthGuard } from 'src/guards/cookie.auth';
+import { JwtAuthGuard } from 'src/guards/jwt.auth';
 
 @Controller('tasks')
 export class TodolistController {
   constructor(private readonly todolistService: TodolistService) {}
 
   @Get()
+  @UseGuards(JwtAuthGuard, CookieAuthGuard)
   getTasks(
     @Query('user_id') userId: number,
     @Query('isCompleted') isCompleted: string,
