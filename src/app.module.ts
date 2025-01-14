@@ -11,7 +11,10 @@ import { UserModule } from './user/user.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: process.env.NODE_ENV === 'production' ? undefined : `.env`,
+      envFilePath:
+        process.env.NODE_ENV === 'production'
+          ? `.env.production`
+          : `.env.local`,
       isGlobal: true,
     }),
     TodolistModule,

@@ -13,8 +13,8 @@ import { Transport } from '@nestjs/microservices';
         name: 'AUTH_SERVICE',
         transport: Transport.TCP,
         options: {
-          host: 'localhost',
-          port: 3110,
+          host: process.env.AUTH_SERVICE_HOST,
+          port: Number(process.env.AUTH_SERVICE_PORT),
         },
       },
     ]),
