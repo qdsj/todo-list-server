@@ -5,17 +5,21 @@ import { CookieAuthGuard } from 'src/guards/cookie.auth';
 import { JwtAuthGuard } from 'src/guards/jwt.auth';
 import { ClientsModule } from '@nestjs/microservices';
 import { Transport } from '@nestjs/microservices';
+import { ConfigService } from '@nestjs/config';
 
 @Module({
   imports: [
-    ClientsModule.register([
+    ClientsModule.registerAsync([
       {
         name: 'AUTH_SERVICE',
-        transport: Transport.TCP,
-        options: {
-          host: process.env.AUTH_SERVICE_HOST,
-          port: Number(process.env.AUTH_SERVICE_PORT),
-        },
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get('AUTH_SERVICE_HOST'),
+            port: Number(configService.get('AUTH_SERVICE_PORT')),
+          },
+        }),
       },
     ]),
   ],
